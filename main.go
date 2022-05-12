@@ -5,7 +5,8 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"time"
+
+	"github.com/gorilla/mux"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -30,6 +31,7 @@ func (server *Server) dashboardEndpoint(w http.ResponseWriter, r *http.Request) 
 	}
 
 	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(results)
 }
@@ -75,15 +77,23 @@ func errorResponse(w http.ResponseWriter, message string, httpStatusCode int) {
 	w.Write(jsonResp)
 }
 func main() {
+
+	token := "xoxb-3472770742805-3478067021124-wDsAFtX4Sok6z369uMFYzm2a"
+	channelID := "C03E2133QR2"
+	appToken := "xapp-1-A03DT21MT7G-3506826440112-7d05e9c046e62ce14e937feb2266d86e27764008f9fc91c5e0195a9582d759cb"
 	fmt.Println("Server is UP!!!!")
 	client, ctx, cancel, err := connect("mongodb://localhost:27017")
 	if err != nil {
 		log.Println(err)
 	}
-	time.Now().Weekday()
+
+	MessageBot(token, channelID, "hiii", "scrum", "Are you fine")
+	Getmessage(token, appToken)
 	Server := NewServer(client, cancel)
 	defer close(Server.client, ctx, Server.cancel)
-	http.HandleFunc("/dashboard", Server.dashboardEndpoint)
-	http.HandleFunc("/cs", Server.configureStandupEndpoint)
-	log.Println(http.ListenAndServe(":8080", nil))
+	newRouter := mux.NewRouter().StrictSlash(true)
+	newRouter.HandleFunc("/dashboard", Server.dashboardEndpoint).Methods("GET")
+	newRouter.HandleFunc("/dashboard/{name}", Server.configureStandupEndpoint).Methods("GET")
+	newRouter.HandleFunc("/dashboard/{name}/configure", Server.configureStandupEndpoint).Methods("POST")
+	log.Println(http.ListenAndServe(":8080", newRouter))
 }

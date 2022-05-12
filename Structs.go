@@ -11,7 +11,7 @@ type Server struct {
 	cancel context.CancelFunc
 }
 type Standup struct {
-	ID               string   `bson:"ID" json:"ID"`
+	ID               string   `bson:"_id" json:"ID"`
 	Name             string   `bson:"Name" json:"Name"`
 	Hour             int      `bson:"Hour" json:"Hour"`
 	Minute           int      `bson:"Minute" json:"Minute"`
